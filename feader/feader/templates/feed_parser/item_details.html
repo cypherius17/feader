@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load rest_framework %}
+ 
+{% block title %}Add New RSS Item{% endblock title %}
+ 
+{% block content %}
+<div class="col-md-12">
+    <h4>RSS Item Details</h4> 
+         
+ <div class="container">
+     <form method="POST" class="post-form">  
+         {% csrf_token %}  
+         {% render_form serializer %}   
+         <button type="submit" class="btn btn-primary">Submit</button>  
+     </form>  
+ </div>
+</div> 
+{% endblock content %}
