@@ -44,7 +44,6 @@ Access `127.0.0.1:8000/rss-items/`
 7. Unit test
 
 ```sh
-    export DJANGO_SETTINGS_MODULE="feader.settings.test"
     pip install -r requirements/test.txt
     ./manage.py test
 ```
