@@ -1,8 +1,11 @@
+import pytz
 from faker import Factory
+from datetime import datetime
 from django.test import TestCase
 from rest_framework.test import APIClient
 from .models import RSSItem, RSSSource
 from .factories import RSSSourceFactory, RSSItemFactory
+from .utils.feed_utils import FeedUtils
 
 faker = Factory.create()
 
@@ -55,3 +58,40 @@ class RSSTestCase(TestCase):
         rss_item = RSSItemFactory()
         self.client.get(self.delete_url.format(rss_item.id))
         assert not RSSItem.objects.filter(id=rss_item.id).exists()
+
+
+class FetchUtilTestCase(TestCase):
+    def setUp(self):
+        self.sample_rss_urls = [
+            'https://www.feedforall.com/sample.xml',
+            'https://www.feedforall.com/blog-feed.xml'
+        ]
+
+    def test_fetch_function_single_url(self):
+        FeedUtils.fetch_rss_elements([self.sample_rss_urls[0]])
+        rss_source_query = RSSSource.objects.filter(
+            title='FeedForAll Sample Feed',
+            link='http://www.feedforall.com/industry-solutions.htm',
+            description='RSS is a fascinating technology. The uses for RSS are expanding daily. Take a closer look at how various industries are using the benefits of RSS in their businesses.',
+            source_url=self.sample_rss_urls[0],
+            pub_date=datetime(2004, 10, 19, 17, 38, 55, 0, pytz.UTC)
+        )
+        rss_item_query = RSSItem.objects.all()
+
+        assert rss_source_query.exists()
+        assert rss_item_query.count() == 9
+
+    def test_fetch_function_multi_urls(self):
+        FeedUtils.fetch_rss_elements(self.sample_rss_urls)
+        rss_source_query = RSSSource.objects.all()
+        rss_item_query = RSSItem.objects.all()
+        assert rss_item_query.count() == 745
+        assert rss_source_query.count() == 2
+
+    def test_fetch_function_get_or_create(self):
+        FeedUtils.fetch_rss_elements([self.sample_rss_urls[0]])
+        FeedUtils.fetch_rss_elements([self.sample_rss_urls[0]])
+        rss_source_query = RSSSource.objects.all()
+        rss_item_query = RSSItem.objects.all()
+        assert rss_source_query.count() == 1
+        assert rss_item_query.count() == 9

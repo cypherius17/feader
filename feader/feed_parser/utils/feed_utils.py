@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class FeedUtils:
     @staticmethod
     def datetime_from_pub_date(pub_date):
+        if not pub_date:
+            return None
         return datetime.strptime(pub_date, "%a, %d %b %Y %H:%M:%S %z")
 
     @staticmethod
